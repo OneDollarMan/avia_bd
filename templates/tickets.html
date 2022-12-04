@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import 'bootstrap5/form.html' as wtf %}
+
+{% block app_content %}
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header text-bg-primary">
+                Список билетов
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Дата отправления</th>
+                        <th>Время полета</th>
+                        <th>Самолет</th>
+                        <th>Маршрут</th>
+                        <th>Действия</th>
+                    </tr>
+                    {% for t in tickets %}
+                    <tr>
+                        <td>{{loop.index}}</td>
+                        <td>{{t[1]}}</td>
+                        <td>{{t[2]}}</td>
+                        <td>{{t[3]}}</td>
+                        <td>{{t[4]}}</td>
+                        <td><a href="/tickets/rm/{{t[0]}}"><button class="btn btn-sm btn-primary">Отменить</button></a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

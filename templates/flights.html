@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% import 'bootstrap5/form.html' as wtf %}
+
+{% block app_content %}
+<div class="row">
+    <div class="col col-sm-3">
+        {% if session.role >= 1 %}
+        <div class="card">
+            <div class="card-header text-bg-primary">
+                Добавить рейс
+            </div>
+            <div class="card-body">
+                {{ wtf.render_form(form) }}
+            </div>
+        </div>
+        <br>
+        {% endif %}
+    </div>
+
+    <div class="col">
+        <div class="card">
+            <div class="card-header text-bg-primary">
+                Список рейсов
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Дата отправления</th>
+                        <th>Маршрут</th>
+                        <th>Самолет</th>
+                        <th>Занято мест</th>
+                        <th>Действия</th>
+                    </tr>
+                    {% for f in flights %}
+                    <tr class='clickable-row' data-href='{{ url_for("flight", id=f[0])}}'>
+                        <td>{{loop.index}}</td>
+                        <td>{{f[1]}}</td>
+                        <td>{{f[2]}}</td>
+                        <td>{{f[3]}}</td>
+                        <td>{{f[4]}}/{{f[5]}}</td>
+                        <td><a href="/flights/buy/{{f[0]}}"><button class="btn btn-sm btn-primary">Купить билет</button></a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

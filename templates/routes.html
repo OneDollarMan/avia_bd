@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import 'bootstrap5/form.html' as wtf %}
+
+{% block app_content %}
+<div class="row">
+    {% if session.role == 2 %}
+    <div class="col col-sm-3">
+        <div class="card">
+            <div class="card-header text-bg-primary">
+                Добавить маршрут
+            </div>
+            <div class="card-body">
+                {{ wtf.render_form(form) }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col">
+        <div class="card">
+            <div class="card-header text-bg-primary">
+                Список маршрутов
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Номер</th>
+                        <th>Аэропорт вылета</th>
+                        <th>Аэропорт назначения</th>
+                        <th>Цена билета</th>
+                        <th>Время в полете</th>
+                    </tr>
+                    {% for r in routes %}
+                    <tr>
+                        <td>{{loop.index}}</td>
+                        <td>{{r[1]}}</td>
+                        <td>{{r[6]}}</td>
+                        <td>{{r[7]}}</td>
+                        <td>{{r[4]}}</td>
+                        <td>{{r[5]}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
