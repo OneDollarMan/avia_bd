@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, DateTimeLocalField, SubmitField, PasswordField, DecimalField, TimeField
+from wtforms import StringField, SelectField, DateTimeLocalField, SubmitField, PasswordField, DecimalField, TimeField, \
+    DateField
 from wtforms.validators import Length, NumberRange, InputRequired, Optional, ValidationError
 
 rus_length = Length(min=1, max=45, message='Значение поля должно быть длиной от %(min)d до %(max)d символов')
@@ -62,20 +63,8 @@ class FlightForm(FlaskForm):
     submit = SubmitField('Добавить')
 
 
-class FilterContractForm(FlaskForm):
-    start_date = DateTimeLocalField('Дата доставки от', format='%Y-%m-%dT%H:%M', validators=[Optional()])
-    end_date = DateTimeLocalField('Дата доставки до', format='%Y-%m-%dT%H:%M', validators=[Optional()])
-    customer2 = SelectField('Сортировка по заказчику', validators=[Optional()])
-    status = SelectField('Сортировка по статусу', validators=[Optional()])
+class FilterFlightForm(FlaskForm):
+    a1 = SelectField('Аэропорт вылета', [Optional()])
+    a2 = SelectField('Аэропорт назначения', [Optional()])
+    date2 = DateField('Дата вылета', format='%Y-%m-%d', validators=[Optional()])
     submit2 = SubmitField('Показать')
-
-
-class AddFoodForm(FlaskForm):
-    food = SelectField('Выберите продукт', [rus_input_required])
-    amount = DecimalField('Количество', [rus_input_required, rus_number_range])
-    submit = SubmitField('Добавить')
-
-
-class StatusForm(FlaskForm):
-    status = SelectField('Выберите статус', [rus_input_required])
-    submit2 = SubmitField('Добавить')

@@ -9,6 +9,12 @@ from repo import *
 repo = Repo(host=app.config['HOST'], user=app.config['USER'], password=app.config['PASSWORD'], db=app.config['DB'])
 
 
+def flash_errors(form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(error)
+
+
 @app.route("/")
 def index():
     if not session.get('loggedin'):
@@ -28,7 +34,7 @@ def login():
             session['loggedin'] = True
             session['id'] = user[0]
             session['username'] = user[1]
-            session['role'] = user[4]
+            session['role'] = user[6]
             return redirect(url_for('index'))
         else:
             flash('Неверный логин или пароль!')
@@ -55,15 +61,15 @@ def users():
                 flash('Пользователь уже существует')
             else:
                 app.logger.warning(f'User {form.username.data} with role id {form.role.data} was added by {session.get("username")}')
-            redirect(url_for('users'))
-    return render_template('users.html', title='Работники', us=repo.get_all_users(), form=form)
+            return redirect(url_for('users'))
+    return render_template('users.html', title='Пользователи', us=repo.get_all_users(), form=form)
 
 
 @app.route("/users/rm/<int:id>")
 def user_rm(id):
     if session.get('role') == repo.ROLE_ADMINISTRATOR:
         if id:
-            repo.rm_user(id)
+            repo.remove_user(id)
     return redirect(url_for('users'))
 
 
@@ -72,27 +78,18 @@ def aircrafts():
     form = forms.AircraftForm()
     if form.validate_on_submit():
         if session.get('role') == repo.ROLE_ADMINISTRATOR:
-            repo.add_aircraft(form.name.data, form.capacity.data, form.plate.data)
+            if not repo.add_aircraft_check(form.name.data, form.capacity.data, form.plate.data):
+                flash('Введите уникальный номер')
             return redirect(url_for('aircrafts'))
     return render_template('aircrafts.html', title="Самолеты", ss=repo.get_aircrafts(), form=form)
 
 
-@app.route("/suppliers/<int:supplierid>")
-def supplier(supplierid):
-    if session.get('role') == repo.ROLE_ADMINISTRATOR:
-        return render_template('supplier.html', title="Поставщик", s=repo.get_supplier(supplierid),
-                               ps=repo.get_food_of_supplier(supplierid))
-    else:
-        flash("Недостаточно прав")
-        return redirect(url_for('suppliers'))
-
-
-@app.route("/suppliers/rm/<int:id>")
-def suppliers_rm(id):
+@app.route("/aircrafts/rm/<int:id>")
+def aircraft_rm(id):
     if session.get('role') == repo.ROLE_ADMINISTRATOR:
         if id:
-            repo.rm_supplier(id)
-    return redirect(url_for("suppliers"))
+            repo.remove_aircraft(id)
+    return redirect(url_for("aircrafts"))
 
 
 @app.route("/airports", methods=['GET', 'POST'])
@@ -101,27 +98,19 @@ def airports():
 
     if form.validate_on_submit():
         if session.get('role') == repo.ROLE_ADMINISTRATOR:
-            repo.add_airport(form.name.data, form.city.data, form.address.data)
+            if not repo.add_airport_check(form.name.data, form.city.data, form.address.data):
+                flash('Введите уникальное название')
             return redirect(url_for('airports'))
 
     return render_template('airports.html', title="Аэропорты", airports=repo.get_airports(), form=form)
 
 
-@app.route("/food/<int:id>")
-def food(id):
-    if session.get('role') == repo.ROLE_ADMINISTRATOR:
-        return render_template('food.html', title="Продукт", p=repo.get_food(id), cs=repo.get_contracts_of_food(id))
-    else:
-        flash("Недостаточно прав")
-        return redirect(url_for('foods'))
-
-
-@app.route("/food/rm/<int:id>")
-def food_remove(id):
-    if session.get('role') >= repo.ROLE_STOREKEEPER:
+@app.route("/airports/rm/<int:id>")
+def rm_airport(id):
+    if session.get('role') >= repo.ROLE_ADMINISTRATOR:
         if id:
-            repo.rm_food(id)
-    return redirect(url_for("food"))
+            repo.remove_airport(id)
+    return redirect(url_for("airports"))
 
 
 @app.route("/routes", methods=['GET', 'POST'])
@@ -130,27 +119,21 @@ def routes():
     form.a1.choices = repo.select_airports()
     form.a2.choices = repo.select_airports()
     if form.validate_on_submit() and session.get('role') == repo.ROLE_ADMINISTRATOR:
-        repo.add_route(form.number.data, form.a1.data, form.a2.data, form.price.data, form.time.data)
-        redirect(url_for("routes"))
+        if form.a1.data == form.a2.data:
+            flash('Выберите разные аэропорты')
+            return redirect(url_for("routes"))
+        if not repo.add_route_check(form.number.data, form.a1.data, form.a2.data, form.price.data, form.time.data):
+            flash('Введите уникальный номер маршрута')
+        return redirect(url_for("routes"))
     return render_template('routes.html', title="Маршруты", routes=repo.get_routes(), form=form)
 
 
-@app.route("/customers/<int:id>")
-def customer(id):
-    c = repo.get_customer(id)
-    if session.get('role') == repo.ROLE_ADMINISTRATOR:
-        return render_template('customer.html', title="Заказчик", c=c, ss=repo.get_contracts_of_customer(id))
-    else:
-        flash("Недостаточно прав")
-        return redirect(url_for('customers'))
-
-
-@app.route("/customers/rm/<int:id>")
-def customers_remove(id):
+@app.route("/routes/rm/<int:id>")
+def rm_route(id):
     if session.get('role') == repo.ROLE_ADMINISTRATOR:
         if id:
-            repo.rm_customer(id)
-    return redirect(url_for("customers"))
+            repo.remove_route(id)
+    return redirect(url_for("routes"))
 
 
 @app.route("/flights", methods=["GET", "POST"])
@@ -159,12 +142,29 @@ def flights():
     form.aircraft.choices = repo.select_aircrafts()
     form.route.choices = repo.select_routes()
 
-    if form.validate_on_submit() and session.get('role') == repo.ROLE_ADMINISTRATOR:
-        repo.add_flight(form.route.data, form.aircraft.data, form.date.data)
-        app.logger.warning(f'New flight added by {session.get("username")}')
-        return redirect(url_for("flights"))
+    filter_form = forms.FilterFlightForm()
+    filter_form.a1.choices = repo.select_airports()
+    filter_form.a2.choices = repo.select_airports()
 
-    return render_template('flights.html', title="Рейсы", flights=repo.get_flights(), form=form)
+    if filter_form.validate_on_submit():
+        return render_template('flights.html', title="Рейсы", flights=repo.get_flights_sorted(filter_form.a1.data, filter_form.a2.data, filter_form.date2.data), form=form, filter_form=filter_form)
+
+    return render_template('flights.html', title="Рейсы", flights=repo.get_flights(), form=form, filter_form=filter_form)
+
+
+@app.route('/flights/add', methods=['POST'])
+def add_flight():
+    form = forms.FlightForm()
+    form.aircraft.choices = repo.select_aircrafts()
+    form.route.choices = repo.select_routes()
+    if form.validate_on_submit() and session.get('role') >= repo.ROLE_DISPATCHER:
+        if repo.add_flight_with_check(form.route.data, form.aircraft.data, form.date.data):
+            app.logger.warning(f'New flight added by {session.get("username")}')
+        else:
+            flash('В это время самолет уже занят')
+    else:
+        flash_errors(form)
+    return redirect(url_for("flights"))
 
 
 @app.route("/flights/buy/<int:id>")
@@ -172,58 +172,31 @@ def buy_ticket(id):
     if len(repo.get_seat_by_user_and_flight(id, session.get('id'))) == 0:
         if not repo.buy_ticket(id, session.get('id'), datetime.today()):
             flash("Все места заняты")
+        else:
+            flash('Билет куплен')
     else:
         flash('Вы уже купили билет на данный рейс')
     return redirect(url_for("flights"))
 
 
-@app.route("/contracts/add", methods=['POST'])
-def add_contract():
-    contract_form = forms.ContractForm()
-    contract_form.customer.choices = repo.select_customers()
-
-    if contract_form.validate_on_submit():
-        if session.get('role') >= repo.ROLE_STOREKEEPER:
-            repo.add_contract(d=contract_form.date.data, c=contract_form.customer.data, p=contract_form.percent.data)
-    return redirect(url_for("contracts"))
-
-
 @app.route("/flights/<int:id>", methods=["GET", "POST"])
 def flight(id):
-    if session.get('role') >= repo.ROLE_PASSENGER:
-        return render_template('flight.html', title="Рейс", c=repo.get_flight(id))
+    if session.get('role') > repo.ROLE_PASSENGER:
+        print(repo.get_seats_of_flight(id))
+        return render_template('flight.html', title="Рейс", c=repo.get_flight(id)[0], passengers=repo.get_seats_of_flight(id))
     else:
         flash("Недостаточно прав")
         return redirect(url_for('contracts'))
 
 
-@app.route('/contracts/<int:id>/status', methods=['POST'])
-def status(id):
-    status_form = forms.StatusForm()
-    status_form.status.choices = repo.select_statuses()
-    if status_form.validate_on_submit():
-        repo.change_contract_status(id, status_form.status.data)
-        flash('Статус изменен')
-    return redirect(url_for("contract", id=id))
-
-
-@app.route("/contracts/<int:cid>/rm_food/<int:fid>", methods=['GET'])
-def contracts_remove_food(cid, fid):
-    if session.get('role') >= repo.ROLE_STOREKEEPER:
-        if cid and fid:
-            repo.remove_food_from_contract(cid, fid)
-            flash('Позиция удалена')
-    return redirect(url_for("contract", id=cid))
-
-
-@app.route("/contracts/rm/<int:id>")
-def contracts_remove(id):
-    if session.get('role') >= repo.ROLE_STOREKEEPER:
-        if not repo.remove_contract(id):
-            flash('Сначала очистите список продуктов')
-            return redirect(url_for("contract", id=id))
-    flash('Контракт удален')
-    return redirect(url_for("contracts"))
+@app.route("/flights/rm/<int:id>")
+def flights_remove(id):
+    if session.get('role') >= repo.ROLE_DISPATCHER:
+        if not repo.remove_flight(id):
+            flash('Что-то не так')
+            return redirect(url_for("flight", id=id))
+    flash('Рейс отменен')
+    return redirect(url_for("flight"))
 
 
 @app.route('/tickets')
@@ -235,6 +208,11 @@ def tickets():
 def rm_ticket(id):
     repo.rm_seat(id, session.get('id'))
     return redirect(url_for('tickets'))
+
+
+@app.route('/profit')
+def profit():
+    return repo.get_profit_by_month()
 
 
 @app.route('/robots.txt')

@@ -6,3 +6,4 @@ PASSWORD = 'gmfk2ASD'
 DB = 'avia'  # don't change
 
 NAME = 'Авиасейлс'
+BOOTSTRAP_BOOTSWATCH_THEME = 'Quartz'

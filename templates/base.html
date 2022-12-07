@@ -16,7 +16,7 @@
 
 <body class="bg-light">
 {% block navbar %}
-<div class="navbar navbar-dark bg-primary navbar-expand-lg">
+<div class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container">
         <a class="navbar-brand" href="{{ url_for('index') }}">{{ config.NAME }}</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -27,10 +27,12 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav">
                 {% if session.loggedin %}
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('users') }}">Работники</a></li>
+                {% if session.role > 0 %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('users') }}">Пользователи</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('aircrafts') }}">Самолеты</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('airports') }}">Аэропорты</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('routes') }}">Маршруты</a></li>
+                {% endif %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('flights') }}">Рейсы</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('tickets') }}">Ваши билеты</a></li>
                 {% endif %}

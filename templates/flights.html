@@ -6,20 +6,30 @@
     <div class="col col-sm-3">
         {% if session.role >= 1 %}
         <div class="card">
-            <div class="card-header text-bg-primary">
+            <div class="card-header text-bg-dark">
                 Добавить рейс
             </div>
             <div class="card-body">
-                {{ wtf.render_form(form) }}
+                {{ wtf.render_form(form, action='/flights/add') }}
             </div>
         </div>
         <br>
         {% endif %}
+        <div class="card">
+            <div class="card-header text-bg-dark">
+                Фильтры
+            </div>
+            <div class="card-body">
+                {{ wtf.render_form(filter_form) }}
+                <br>
+                <a href="/flights"><button class="btn btn-danger">Сбросить</button></a>
+            </div>
+        </div>
     </div>
 
     <div class="col">
         <div class="card">
-            <div class="card-header text-bg-primary">
+            <div class="card-header text-bg-dark">
                 Список рейсов
             </div>
             <div class="card-body">

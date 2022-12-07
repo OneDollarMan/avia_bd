@@ -6,7 +6,7 @@
     {% if session.role == 2 %}
     <div class="col col-sm-3">
         <div class="card">
-            <div class="card-header text-bg-primary">
+            <div class="card-header text-bg-dark">
                 Добавить пользователя
             </div>
             <div class="card-body">
@@ -18,7 +18,7 @@
 
     <div class="col">
         <div class="card">
-            <div class="card-header text-bg-primary">
+            <div class="card-header text-bg-dark">
                 Список работников
             </div>
             <div class="card-body">
@@ -50,17 +50,16 @@
                 </table>
             </div>
         </div>
-    </div>
-
-    <div class="col">
+        <br>
         <div class="card">
-            <div class="card-header text-bg-primary">
+            <div class="card-header text-bg-dark">
                 Список пассажиров
             </div>
             <div class="card-body">
                 <table class="table">
                     <tr>
                         <th>#</th>
+                        <th>Юзернейм</th>
                         <th>ФИО</th>
                         <th>Документ</th>
                         <th>Номер документа</th>
@@ -74,7 +73,8 @@
                         <td>{{loop.index}}</td>
                         <td>{{u[1]}}</td>
                         <td>{{u[3]}}</td>
-                        <td>{{u[8]}}</td>
+                        <td>{{u[10]}}</td>
+                        <td>{{u[5]}}</td>
                         {% if session.role == 2 %}
                         <td>{% if u[1] != 'root' %}<a href="/users/rm/{{u[0]}}">
                             <button class="btn btn-sm btn-primary">Удалить</button>

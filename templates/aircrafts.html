@@ -6,7 +6,7 @@
     {% if session.role == 2 %}
     <div class="col col-sm-3">
         <div class="card">
-            <div class="card-header text-bg-primary">
+            <div class="card-header text-bg-dark">
                 Добавить самолет
             </div>
             <div class="card-body">
@@ -18,7 +18,7 @@
 
     <div class="col">
         <div class="card">
-            <div class="card-header text-bg-primary">
+            <div class="card-header text-bg-dark">
                 Список самолетов
             </div>
             <div class="card-body">
@@ -28,6 +28,9 @@
                         <th>Название</th>
                         <th>Вместимость</th>
                         <th>Номер</th>
+                        {% if session.role == 2 %}
+                        <th>Действия</th>
+                        {% endif %}
                     </tr>
                     {% for s in ss %}
                     <tr>
@@ -35,6 +38,11 @@
                         <td>{{s[1]}}</td>
                         <td>{{s[2]}}</td>
                         <td>{{s[3]}}</td>
+                        {% if session.role == 2 %}
+                        <td><a href="/aircrafts/rm/{{s[0]}}">
+                            <button class="btn btn-primary btn-sm">Удалить</button>
+                        </a></td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </table>
