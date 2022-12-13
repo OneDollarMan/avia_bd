@@ -28,11 +28,12 @@ class Repo:
 
             self.add_aircraft = lambda name, capacity, plate: self.write_query(
                 f"INSERT INTO aircraft SET name='{name}', capacity='{capacity}', plate='{plate}'")
-            self.get_aircrafts = lambda: self.raw_query("SELECT * FROM aircraft")
-            self.select_aircrafts = lambda: self.raw_query("SELECT id, name FROM aircraft")
+            self.get_aircrafts = lambda: self.raw_query("SELECT * FROM aircraft WHERE hidden='0'")
+            self.select_aircrafts = lambda: self.raw_query("SELECT id, name FROM aircraft WHERE hidden='0'")
             self.get_aircraft = lambda id: self.get_query(f"SELECT * FROM aircraft WHERE id='{id}'")
-            self.get_aircraft_by_plate = lambda plate: self.get_query(f"SELECT * FROM aircraft WHERE plate='{plate}'")
+            self.get_aircraft_by_plate = lambda plate: self.get_query(f"SELECT * FROM aircraft WHERE plate='{plate}' AND hidden='0'")
             self.rm_aircraft = lambda id: self.write_query(f"DELETE FROM aircraft WHERE id='{id}'")
+            self.hide_aircraft = lambda id: self.write_query(f"UPDATE aircraft SET hidden='1' WHERE id='{id}'")
 
             self.add_airport = lambda name, city, address: self.write_query(f"INSERT INTO airport SET name='{name}', city='{city}', address='{address}'")
             self.get_airports = lambda: self.raw_query("SELECT * FROM airport")

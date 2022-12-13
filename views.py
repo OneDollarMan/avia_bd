@@ -92,6 +92,14 @@ def aircraft_rm(id):
     return redirect(url_for("aircrafts"))
 
 
+@app.route("/aircrafts/hide/<int:id>")
+def aircraft_hide(id):
+    if session.get('role') == repo.ROLE_ADMINISTRATOR:
+        if id:
+            repo.hide_aircraft(id)
+    return redirect(url_for("aircrafts"))
+
+
 @app.route("/airports", methods=['GET', 'POST'])
 def airports():
     form = forms.AirportForm()
